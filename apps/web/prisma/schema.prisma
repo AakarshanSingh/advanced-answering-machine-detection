@@ -1,0 +1,295 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// BETTER-AUTH MODELS (No Email Verification)
+// ============================================
+
+/// User model for authentication
+/// @description Stores user account information for Better-Auth
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  name          String?
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  sessions Session[]
+  accounts Account[]
+  callLogs CallLog[]
+
+  @@index([email])
+  @@map("users")
+}
+
+/// Session model for Better-Auth
+/// @description Manages user sessions and authentication tokens
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// Account model for Better-Auth
+/// @description Stores authentication provider information and credentials
+model Account {
+  id           String    @id @default(cuid())
+  userId       String
+  accountId    String
+  providerId   String
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  expiresAt    DateTime?
+  password     String?   // Hashed password for email/password auth
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+// ============================================
+// AMD CORE MODELS
+// ============================================
+
+/// CallLog model for tracking all outbound calls
+/// @description Stores detailed information about each call including AMD results
+model CallLog {
+  id        String   @id @default(cuid())
+  userId    String
+  
+  // Call Details
+  targetNumber String   // E.164 format: +1234567890
+  fromNumber   String   // Twilio number used
+  callSid      String   @unique // Twilio Call SID
+  
+  // AMD Strategy & Results
+  amdStrategy  AmdStrategy // Which detection method was used
+  callStatus   CallStatus  @default(INITIATED)
+  
+  // AMD Detection Results
+  amdResult       AmdResult? // Final detection result
+  amdConfidence   Float?     // Confidence score (0.0 - 1.0)
+  detectionTimeMs Int?       // Time taken to detect (milliseconds)
+  
+  // Call Metrics
+  callDuration     Int?      // Total call duration in seconds
+  ringDuration     Int?      // Time to answer in seconds
+  audioQualityScore Float?   // Audio quality metric (0.0 - 1.0)
+  
+  // Raw Data & Debugging
+  rawAmdResponse Json?      // Full AMD response for debugging
+  audioStreamUrl String?    // URL to recorded audio (if enabled)
+  errorMessage   String?    // Error details if call failed
+  errorCode      String?    // Standardized error code
+  
+  // Retry Logic
+  retryCount     Int       @default(0)
+  retryReason    String?
+  
+  // Metadata
+  notes          String?   // User notes or observations
+  metadata       Json?     // Additional metadata
+  
+  // Timestamps
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  answeredAt     DateTime? // When call was answered
+  completedAt    DateTime? // When call ended
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amdEvents AmdEvent[]
+
+  @@index([userId])
+  @@index([callStatus])
+  @@index([amdStrategy])
+  @@index([amdResult])
+  @@index([createdAt])
+  @@index([callSid])
+  @@map("call_logs")
+}
+
+/// AmdEvent model for tracking real-time AMD detection events
+/// @description Stores timeline of events during AMD detection process
+model AmdEvent {
+  id          String   @id @default(cuid())
+  callLogId   String
+  
+  eventType   AmdEventType // Type of event
+  timestamp   DateTime     @default(now())
+  confidence  Float?       // Confidence at this event
+  rawData     Json?        // Raw event data
+  
+  // Audio Analysis
+  audioChunk     String?  // Reference to audio chunk analyzed
+  transcription  String?  // If speech-to-text was used
+  
+  // Model-Specific Data
+  modelResponse  Json?    // Raw model response
+  processingTime Int?     // Processing time in ms
+  
+  // Relations
+  callLog CallLog @relation(fields: [callLogId], references: [id], onDelete: Cascade)
+
+  @@index([callLogId])
+  @@index([timestamp])
+  @@index([eventType])
+  @@map("amd_events")
+}
+
+/// TestResult model for storing AMD testing data
+/// @description Tracks test calls for accuracy measurement and model tuning
+model TestResult {
+  id           String      @id @default(cuid())
+  
+  // Test Configuration
+  testName     String      // Name of test suite
+  testNumber   String      // Phone number tested
+  expectedResult AmdResult // What we expected to detect
+  
+  // Test Execution
+  amdStrategy   AmdStrategy
+  actualResult  AmdResult?  // What was actually detected
+  confidence    Float?
+  
+  // Accuracy Metrics
+  isCorrect     Boolean     @default(false)
+  isFalsePositive Boolean   @default(false)
+  isFalseNegative Boolean   @default(false)
+  
+  // Performance Metrics
+  detectionTimeMs Int?
+  totalCallTimeMs Int?
+  
+  // Test Metadata
+  notes        String?
+  callSid      String?
+  rawResponse  Json?
+  
+  // Timestamps
+  createdAt    DateTime    @default(now())
+  
+  @@index([testName])
+  @@index([amdStrategy])
+  @@index([isCorrect])
+  @@index([createdAt])
+  @@map("test_results")
+}
+
+/// StrategyConfig model for storing AMD strategy configurations
+/// @description Allows dynamic configuration of AMD strategies
+model StrategyConfig {
+  id            String      @id @default(cuid())
+  strategy      AmdStrategy @unique
+  
+  // Configuration
+  isEnabled     Boolean     @default(true)
+  priority      Int         @default(0) // Higher priority used first
+  
+  // Thresholds
+  confidenceThreshold Float  @default(0.7)
+  timeoutMs           Int    @default(10000)
+  maxRetries          Int    @default(2)
+  
+  // Strategy-Specific Config
+  config        Json        // JSON config for strategy
+  
+  // Performance Stats
+  totalCalls    Int         @default(0)
+  successRate   Float       @default(0.0)
+  avgLatency    Int         @default(0)
+  
+  // Timestamps
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@map("strategy_configs")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+/// AMD Strategy types
+enum AmdStrategy {
+  TWILIO_NATIVE    // Twilio's built-in AMD
+  JAMBONZ          // Jambonz SIP-based AMD
+  HUGGINGFACE      // HuggingFace wav2vec model
+  GEMINI_FLASH     // Google Gemini 2.5 Flash
+  CUSTOM           // Custom implementation
+}
+
+/// Call status throughout lifecycle
+enum CallStatus {
+  INITIATED        // Call initiated
+  RINGING          // Phone is ringing
+  IN_PROGRESS      // Call answered, AMD in progress
+  HUMAN_DETECTED   // Human detected, connecting
+  MACHINE_DETECTED // Voicemail/machine detected
+  COMPLETED        // Call completed successfully
+  FAILED           // Call failed
+  NO_ANSWER        // No one answered
+  BUSY             // Busy signal
+  CANCELLED        // Call was cancelled
+}
+
+/// AMD detection results
+enum AmdResult {
+  HUMAN            // Human answered
+  VOICEMAIL        // Voicemail greeting detected
+  MACHINE_START    // Beginning of machine message
+  MACHINE_END_BEEP // End beep of voicemail
+  FAX              // Fax machine detected
+  UNDECIDED        // Could not determine
+  TIMEOUT          // Detection timed out
+  ERROR            // Error during detection
+}
+
+/// AMD Event types for timeline tracking
+enum AmdEventType {
+  CALL_INITIATED
+  CALL_RINGING
+  CALL_ANSWERED
+  AUDIO_STREAM_STARTED
+  AUDIO_CHUNK_RECEIVED
+  AMD_PROCESSING
+  AMD_RESULT
+  CONFIDENCE_UPDATE
+  HUMAN_DETECTED
+  MACHINE_DETECTED
+  CALL_CONNECTED
+  CALL_HUNGUP
+  ERROR_OCCURRED
+  RETRY_ATTEMPTED
+}

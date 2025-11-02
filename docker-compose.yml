@@ -1,0 +1,36 @@
+
+services:
+  postgres:
+    image: postgres:alpine
+    container_name: amd_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: amd_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - amd_network
+  adminer:
+    image: adminer:latest
+    container_name: amd_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - amd_network
+
+volumes:
+  postgres_data:
+
+
+networks:
+  amd_network:
+    driver: bridge
