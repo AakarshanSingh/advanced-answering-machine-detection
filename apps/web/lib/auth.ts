@@ -13,8 +13,11 @@ export const auth = betterAuth({
     requireEmailVerification: false,
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, 
-    updateAge: 60 * 60 * 24, 
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
   },
   trustedOrigins: [process.env.BETTER_AUTH_URL || "http://localhost:3000"],
+  advanced: {
+    disableCSRFCheck: true,
+  },
 });
