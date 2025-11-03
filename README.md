@@ -13,7 +13,7 @@ Built with Next.js, Twilio, Python FastAPI, and AI/ML models for real-time audio
 
 ## 📺 Demo Video
 
-> 🎥 **[Watch Full Demo on YouTube](#)** *(Coming Soon)*
+> 🎥 **[Watch Full Demo on YouTube](#)** _(Coming Soon)_
 >
 > See the system in action: multi-strategy AMD detection, real-time monitoring, and automated call routing.
 
@@ -22,24 +22,27 @@ Built with Next.js, Twilio, Python FastAPI, and AI/ML models for real-time audio
 ## 🎯 Key Features
 
 ### 🔄 Multi-Strategy AMD Detection
-- **Twilio Native AMD** - Built-in async callbacks with machine detection
-- **Jambonz SIP** - SIP-based detection with custom recognizers *(In Progress)*
-- **HuggingFace wav2vec** - ML-powered voice classification (ONNX optimized)
-- **Google Gemini 2.5 Flash** - AI-powered audio analysis with high accuracy
+
+- **Twilio Native AMD** - Built-in async callbacks with machine detection (~3-4s per call)
+- **HuggingFace wav2vec** - ML-powered voice classification (ONNX optimized, ~7-9s local processing)
+- **Google Gemini 2.5 Flash** - AI-powered audio analysis with high accuracy (~6-8s per call)
 
 ### 🎛️ Smart Call Handling
+
 - **Human Detection**: Automatically connect to agent
 - **Voicemail Detection**: Hang up or leave pre-recorded message
 - **Confidence Scoring**: Make decisions based on detection confidence
 - **Fallback Logic**: Handle undecided cases gracefully
 
 ### 📊 Real-Time Monitoring
+
 - **Live Dashboard**: Server-Sent Events (SSE) for real-time updates
 - **Call History**: Comprehensive logs with timestamps and metrics
 - **Event Timeline**: Track every stage of call processing
 - **Performance Metrics**: Detection time, confidence scores, accuracy
 
 ### 🏗️ Architecture
+
 - **Type-Safe**: End-to-end TypeScript with Prisma ORM
 - **Modular Design**: Strategy pattern for easy extension
 - **Scalable**: Docker-ready, horizontal scaling support
@@ -73,12 +76,14 @@ cd advanced-answering-machine-detection
 ### 2️⃣ Install Dependencies
 
 #### Next.js Web App
+
 ```bash
 cd apps/web
 npm install
 ```
 
 #### Python AI Service
+
 ```bash
 cd ../ai-service
 python -m venv .venv
@@ -99,24 +104,30 @@ DATABASE_URL="postgresql://user:pass@localhost:5432/amd_database?schema=public"
 # Better Auth (generate a random secret)
 BETTER_AUTH_SECRET="your-random-32-char-secret-key-here"
 ```
+
 BETTER_AUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 # Twilio Configuration
+
 TWILIO_ACCOUNT_SID="ACxxxxxxxxxxxxxxxxxxxxxxxxxx"
 TWILIO_AUTH_TOKEN="your_auth_token_here"
-TWILIO_PHONE_NUMBER="+1234567890"  # Your Twilio number
-AGENT_PHONE_NUMBER="+1234567890"   # Agent number to forward human calls
+TWILIO_PHONE_NUMBER="+1234567890" # Your Twilio number
+AGENT_PHONE_NUMBER="+1234567890" # Agent number to forward human calls
 
 # AI Service
+
 AI_SERVICE_URL="http://localhost:8000"
 
 # Ngrok (REQUIRED - set after step 4)
+
 NGROK_URL="https://your-ngrok-url.ngrok-free.app"
 
 # Optional: Google Gemini
-GOOGLE_GEMINI_API_KEY="your_gemini_api_key"  # For Gemini strategy
-```
+
+GOOGLE_GEMINI_API_KEY="your_gemini_api_key" # For Gemini strategy
+
+````
 
 #### AI Service (apps/ai-service/.env)
 
@@ -128,7 +139,7 @@ GEMINI_API_KEY="your_gemini_api_key_here"
 HOST="0.0.0.0"
 PORT=8000
 LOG_LEVEL="info"
-```
+````
 
 ---
 
@@ -145,6 +156,7 @@ docker ps
 ```
 
 **Access Adminer** (Database GUI): http://localhost:8080
+
 - Server: `postgres`
 - Username: `user`
 - Password: `pass`
@@ -177,6 +189,7 @@ ngrok http 3000
 **Copy the HTTPS URL** (e.g., `https://abc-123-xyz.ngrok-free.app`)
 
 **Update apps/web/.env:**
+
 ```bash
 NGROK_URL="https://abc-123-xyz.ngrok-free.app"
 ```
@@ -207,9 +220,9 @@ npm run dev
 1. Go to **Dashboard** (http://localhost:3000/dashboard)
 2. Enter a phone number (e.g., your mobile)
 3. Select an **AMD Strategy**:
-   - **Twilio Native** - Fast, built-in detection
-   - **HuggingFace Model** - ML-based classification
-   - **Gemini Flash** - AI-powered analysis
+   - **Twilio Native** - Fast, built-in detection (~3-4s)
+   - **HuggingFace Model** - ML-based classification (~7-9s, runs locally)
+   - **Gemini Flash** - AI-powered analysis (~6-8s)
 4. Click **Dial**
 5. Watch real-time updates in the **Call Monitor**
 
@@ -242,7 +255,7 @@ sequenceDiagram
     Twilio->>ngrok: Request TwiML
     ngrok->>NextJS: Forward to /api/twilio/twiml
     NextJS->>DB: Create CallLog
-    
+
     alt Strategy: Twilio Native
         NextJS->>Twilio: Return TwiML with <Start><Record>
         Twilio->>User: Play ringing tone
@@ -263,16 +276,16 @@ sequenceDiagram
         Python->>NextJS: {label: "human", confidence: 0.92}
         NextJS->>DB: Update CallLog with result
     end
-    
+
     NextJS->>Twilio: Redirect based on result
-    
+
     alt Human Detected
         Twilio->>Agent: Connect call
         Agent->>User: Conversation
     else Machine Detected
         Twilio->>User: Play message or hang up
     end
-    
+
     NextJS->>NextJS: Emit SSE events
     Note over NextJS,DB: Real-time dashboard updates
 ```
@@ -372,17 +385,21 @@ advanced-answering-machine-detection/
 ## 🧪 AMD Strategies Explained
 
 ### 1. Twilio Native AMD ✅
+
 **How it works:**
+
 - Uses Twilio's built-in machine detection
 - Analyzes call audio during connection
 - Returns result via async webhook
 
 **Pros:**
+
 - ✅ Fast (~2-5 seconds)
 - ✅ No external dependencies
 - ✅ Reliable baseline
 
 **Cons:**
+
 - ❌ Limited customization
 - ❌ Lower accuracy (~70-80%)
 
@@ -391,19 +408,23 @@ advanced-answering-machine-detection/
 ---
 
 ### 2. HuggingFace wav2vec Model 🤖
+
 **How it works:**
+
 - Records 5 seconds of audio
 - Downloads recording from Twilio
 - Sends to Python AI service
 - Classifies using fine-tuned wav2vec model (ONNX optimized)
 
 **Pros:**
+
 - ✅ High accuracy (~88-92%)
 - ✅ Fast inference (200-500ms with ONNX)
 - ✅ Offline capable (no API costs)
 - ✅ Customizable (fine-tune on your data)
 
 **Cons:**
+
 - ❌ Requires Python service
 - ❌ Initial model download (~150MB)
 - ❌ Recording delay (5 seconds)
@@ -411,6 +432,7 @@ advanced-answering-machine-detection/
 **Best for:** High-volume production, cost optimization, custom training data
 
 **Performance:**
+
 - Model: `jakeBland/wav2vec-vm-finetune`
 - Backend: ONNX Runtime (4-10x faster than PyTorch)
 - Inference: 200-500ms
@@ -419,19 +441,23 @@ advanced-answering-machine-detection/
 ---
 
 ### 3. Google Gemini 2.5 Flash 🧠
+
 **How it works:**
+
 - Records 5 seconds of audio
 - Uploads to Google Gemini API
 - AI analyzes audio with natural language reasoning
 - Returns classification + confidence + explanation
 
 **Pros:**
+
 - ✅ Highest accuracy (~92-95%)
 - ✅ Natural language reasoning
 - ✅ Handles edge cases well
 - ✅ No model hosting needed
 
 **Cons:**
+
 - ❌ API costs (~$0.0001 per call)
 - ❌ Requires internet
 - ❌ Slower (~6-8 seconds)
@@ -440,18 +466,9 @@ advanced-answering-machine-detection/
 **Best for:** High-stakes scenarios, debugging, validation against other strategies
 
 **Cost Estimate:**
+
 - $0.0001 per audio analysis
 - 10,000 calls = $1.00
-
----
-
-### 4. Jambonz SIP (Coming Soon) 🚧
-**How it works:**
-- SIP-based real-time audio streaming
-- Custom recognizers for voicemail patterns
-- WebSocket streaming to analysis service
-
-**Status:** Architecture designed, implementation in progress
 
 ---
 
@@ -459,27 +476,27 @@ advanced-answering-machine-detection/
 
 ### Detailed Performance Comparison
 
-| Metric | Twilio Native | HuggingFace wav2vec | Google Gemini | Jambonz SIP* |
-|--------|--------------|-------------------|---------------|-------------|
-| **Accuracy** | 70-80% | 88-92% | 92-95% | TBD |
-| **Detection Time** | 2-5 seconds | 5-7 seconds total<br>(200-500ms inference) | 7-10 seconds total<br>(2-4s inference) | <3 seconds |
-| **Cost per Call** | $0 (included) | $0 (self-hosted) | ~$0.0001 | $0 (self-hosted) |
-| **Infrastructure** | None | Python + ONNX | Google API | SIP Server |
-| **Internet Required** | ✅ (Twilio) | ❌ (after model download) | ✅ | ❌ |
-| **Customization** | ❌ Limited | ✅ Can fine-tune | ❌ API-based | ✅ Full control |
-| **False Positives** | 15-20% | 8-12% | 5-8% | TBD |
-| **False Negatives** | 10-15% | 8-10% | 5-7% | TBD |
-| **Scalability** | ♾️ Unlimited | High (CPU-bound) | API rate limits | High |
-| **Setup Complexity** | ⭐ Easy | ⭐⭐⭐ Moderate | ⭐⭐ Easy | ⭐⭐⭐⭐ Complex |
-
-\* Jambonz SIP metrics are projected based on architecture design
+| Metric                | Twilio Native | HuggingFace wav2vec                        | Google Gemini                          |
+| --------------------- | ------------- | ------------------------------------------ | -------------------------------------- |
+| **Accuracy**          | 70-80%        | 88-92%                                     | 92-95%                                 |
+| **Detection Time**    | 2-5 seconds   | 5-7 seconds total<br>(200-500ms inference) | 7-10 seconds total<br>(2-4s inference) |
+| **Cost per Call**     | $0 (included) | $0 (self-hosted)                           | ~$0.0001                               |
+| **Infrastructure**    | None          | Python + ONNX                              | Google API                             |
+| **Internet Required** | ✅ (Twilio)   | ❌ (after model download)                  | ✅                                     |
+| **Customization**     | ❌ Limited    | ✅ Can fine-tune                           | ❌ API-based                           |
+| **False Positives**   | 15-20%        | 8-12%                                      | 5-8%                                   |
+| **False Negatives**   | 10-15%        | 8-10%                                      | 5-7%                                   |
+| **Scalability**       | ♾️ Unlimited  | High (CPU-bound)                           | API rate limits                        |
+| **Setup Complexity**  | ⭐ Easy       | ⭐⭐⭐ Moderate                            | ⭐⭐ Easy                              |
 
 ### 🎯 Key Technical Decisions
 
 #### 1. **Why Recording-Based over WebSocket Streaming?**
+
 **Decision:** Use Twilio `<Record>` + callback instead of `<Stream>` WebSocket
 
 **Rationale:**
+
 - ✅ Next.js App Router doesn't support WebSocket upgrades (Edge Runtime limitation)
 - ✅ Recording approach proven with Gemini strategy
 - ✅ Simpler debugging (can inspect recording URLs)
@@ -491,9 +508,11 @@ advanced-answering-machine-detection/
 ---
 
 #### 2. **Why ONNX Runtime over PyTorch?**
+
 **Decision:** Convert wav2vec model to ONNX format for inference
 
 **Rationale:**
+
 - ✅ **4-10x faster inference** (200-500ms vs 2-5s)
 - ✅ Smaller memory footprint (500MB vs 2GB)
 - ✅ CPU-optimized (no GPU needed)
@@ -502,11 +521,12 @@ advanced-answering-machine-detection/
 **Impact:** Made self-hosted ML viable for production at scale
 
 **Benchmark Results:**
+
 ```bash
 # PyTorch inference
 Average time: 2,341ms per audio file
 
-# ONNX Runtime inference  
+# ONNX Runtime inference
 Average time: 287ms per audio file
 Speed improvement: 8.15x faster
 ```
@@ -514,15 +534,18 @@ Speed improvement: 8.15x faster
 ---
 
 #### 3. **Why Lazy Loading for ML Models?**
+
 **Decision:** Load HuggingFace model on first request, not at startup
 
 **Rationale:**
+
 - ✅ Faster service startup (0s vs 30-60s)
 - ✅ Doesn't block other strategies
 - ✅ Thread-safe with locking mechanism
 - ✅ Better developer experience
 
 **Implementation:**
+
 ```python
 _detector = None
 _model_load_lock = threading.Lock()
@@ -539,15 +562,18 @@ def get_detector() -> HuggingFaceAMDDetector:
 ---
 
 #### 4. **Why Strategy Pattern for AMD?**
+
 **Decision:** Abstract AMD detection into pluggable strategies
 
 **Benefits:**
+
 - ✅ Easy A/B testing (compare strategies side-by-side)
 - ✅ Add new strategies without changing core code
 - ✅ Different strategies for different use cases
 - ✅ Graceful fallback if one strategy fails
 
 **Code Structure:**
+
 ```typescript
 interface AMDStrategy {
   getStrategy(): string;
@@ -564,124 +590,45 @@ strategyFactory.register(new GeminiAMDStrategy());
 
 ### 💡 Recommendations by Use Case
 
-| Use Case | Recommended Strategy | Reasoning |
-|----------|---------------------|-----------|
-| **MVP/Prototype** | Twilio Native | Zero setup, fast to implement |
-| **High Volume (>10K calls/day)** | HuggingFace wav2vec | No per-call costs, high accuracy |
-| **Maximum Accuracy** | Google Gemini | Best detection rates, handles edge cases |
-| **Compliance/Audit** | Google Gemini | Provides reasoning for each decision |
-| **Offline/Air-Gapped** | HuggingFace wav2vec | Works without internet |
-| **Custom Training Data** | HuggingFace wav2vec | Can fine-tune on your recordings |
-| **Real-Time (<3s)** | Jambonz SIP *(coming)* | Streaming analysis |
-
----
-
-### 📈 How to Calculate Your AMD Metrics
-
-#### Accuracy Formula
-```
-Accuracy = (True Positives + True Negatives) / Total Calls
-```
-
-#### Measuring Your Own Performance
-
-1. **Collect Ground Truth Data**
-```bash
-# Make test calls and manually label them
-# Store in: test-data/ground-truth.json
-[
-  {"callSid": "CAxxxx", "actual": "human", "predicted": "human"},
-  {"callSid": "CAyyyy", "actual": "machine", "predicted": "machine"},
-  {"callSid": "CAzzzz", "actual": "human", "predicted": "machine"}
-]
-```
-
-2. **Calculate Metrics**
-```typescript
-// Create: scripts/calculate-metrics.ts
-const truePositives = calls.filter(c => 
-  c.actual === 'human' && c.predicted === 'human'
-).length;
-
-const trueNegatives = calls.filter(c => 
-  c.actual === 'machine' && c.predicted === 'machine'
-).length;
-
-const falsePositives = calls.filter(c => 
-  c.actual === 'machine' && c.predicted === 'human'
-).length;
-
-const falseNegatives = calls.filter(c => 
-  c.actual === 'human' && c.predicted === 'machine'
-).length;
-
-const accuracy = (truePositives + trueNegatives) / calls.length;
-const precision = truePositives / (truePositives + falsePositives);
-const recall = truePositives / (truePositives + falseNegatives);
-const f1Score = 2 * (precision * recall) / (precision + recall);
-
-console.log({
-  accuracy: `${(accuracy * 100).toFixed(2)}%`,
-  precision: `${(precision * 100).toFixed(2)}%`,
-  recall: `${(recall * 100).toFixed(2)}%`,
-  f1Score: f1Score.toFixed(3)
-});
-```
-
-3. **Run Comparison Test**
-```bash
-# Test all strategies on same dataset
-npm run test:amd-comparison
-
-# Output:
-Strategy         Accuracy  Precision  Recall  F1-Score  Avg Time
-Twilio Native    74.2%     71.3%      76.8%   0.739     3.2s
-HuggingFace      89.7%     88.1%      91.2%   0.896     5.4s
-Gemini           93.4%     92.8%      94.1%   0.934     8.7s
-```
-
-4. **Check Database for Real Performance**
-```sql
--- Query your actual call logs
-SELECT 
-  amdResult,
-  COUNT(*) as total,
-  AVG(detectionTimeMs) as avg_time_ms,
-  AVG(amdConfidence) as avg_confidence
-FROM "CallLog"
-WHERE createdAt >= NOW() - INTERVAL '7 days'
-GROUP BY amdResult;
-```
+| Use Case                         | Recommended Strategy | Reasoning                                |
+| -------------------------------- | -------------------- | ---------------------------------------- |
+| **MVP/Prototype**                | Twilio Native        | Zero setup, fast to implement            |
+| **High Volume (>10K calls/day)** | HuggingFace wav2vec  | No per-call costs, high accuracy         |
+| **Maximum Accuracy**             | Google Gemini        | Best detection rates, handles edge cases |
+| **Compliance/Audit**             | Google Gemini        | Provides reasoning for each decision     |
+| **Offline/Air-Gapped**           | HuggingFace wav2vec  | Works without internet                   |
+| **Custom Training Data**         | HuggingFace wav2vec  | Can fine-tune on your recordings         |
 
 ---
 
 ## �🔧 Configuration
 
-
 ### Environment Variables
 
-| Variable | Required | Description | Example |
-|----------|----------|-------------|---------|
-| `DATABASE_URL` | ✅ | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/amd_database` |
-| `TWILIO_ACCOUNT_SID` | ✅ | Twilio Account SID | `ACxxxxxxxxxxxx` |
-| `TWILIO_AUTH_TOKEN` | ✅ | Twilio Auth Token | `your_token_here` |
-| `TWILIO_PHONE_NUMBER` | ✅ | Your Twilio number | `+1234567890` |
-| `AGENT_PHONE_NUMBER` | ✅ | Agent forwarding number | `+1234567890` |
-| `NGROK_URL` | ✅ | Public webhook URL | `https://abc.ngrok-free.app` |
-| `AI_SERVICE_URL` | ✅ | Python service URL | `http://localhost:8000` |
-| `GOOGLE_GEMINI_API_KEY` | ⭕ | For Gemini strategy | `AIza...` |
-| `BETTER_AUTH_SECRET` | ✅ | Random 32+ char string | `your-secret-key` |
+| Variable                | Required | Description                  | Example                                              |
+| ----------------------- | -------- | ---------------------------- | ---------------------------------------------------- |
+| `DATABASE_URL`          | ✅       | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/amd_database` |
+| `TWILIO_ACCOUNT_SID`    | ✅       | Twilio Account SID           | `ACxxxxxxxxxxxx`                                     |
+| `TWILIO_AUTH_TOKEN`     | ✅       | Twilio Auth Token            | `your_token_here`                                    |
+| `TWILIO_PHONE_NUMBER`   | ✅       | Your Twilio number           | `+1234567890`                                        |
+| `AGENT_PHONE_NUMBER`    | ✅       | Agent forwarding number      | `+1234567890`                                        |
+| `NGROK_URL`             | ✅       | Public webhook URL           | `https://abc.ngrok-free.app`                         |
+| `AI_SERVICE_URL`        | ✅       | Python service URL           | `http://localhost:8000`                              |
+| `GOOGLE_GEMINI_API_KEY` | ⭕       | For Gemini strategy          | `AIza...`                                            |
+| `BETTER_AUTH_SECRET`    | ✅       | Random 32+ char string       | `your-secret-key`                                    |
 
 ### Strategy Configuration
 
 **Twilio Native** - No configuration needed, works out of the box
 
 **HuggingFace wav2vec:**
+
 - Model auto-downloads on first use (~150MB)
 - ONNX conversion happens automatically
 - Caches to `apps/ai-service/models_cache/`
 
 **Google Gemini:**
+
 - Requires `GOOGLE_GEMINI_API_KEY`
 - Get free API key: https://aistudio.google.com/app/apikey
 - Free tier: 15 requests/minute, 1500/day
@@ -689,15 +636,19 @@ GROUP BY amdResult;
 ## �🐛 Troubleshooting
 
 ### Issue: "Strategy HUGGINGFACE not found"
+
 **Solution:** Restart Next.js server after pulling latest code
+
 ```bash
 cd apps/web
 npm run dev
 ```
 
 ### Issue: Python service crashes on startup
+
 **Cause:** Missing dependencies
 **Solution:**
+
 ```bash
 cd apps/ai-service
 source .venv/bin/activate
@@ -705,8 +656,10 @@ pip install -r requirements.txt
 ```
 
 ### Issue: Model download fails / times out
+
 **Cause:** Slow network or firewall
 **Solution:**
+
 ```bash
 # Increase timeout
 export HF_HUB_DOWNLOAD_TIMEOUT=300
@@ -716,17 +669,22 @@ python -c "from transformers import AutoModel; AutoModel.from_pretrained('jakeBl
 ```
 
 ### Issue: "WebSocket upgrade failed"
+
 **Cause:** This was a bug in earlier versions (now fixed)
 **Solution:** Update to latest code - we now use recording approach, not WebSocket
 
 ### Issue: ngrok URL keeps changing
+
 **Cause:** Free ngrok resets URL on restart
-**Solution:** 
+**Solution:**
+
 - Paid ngrok plan for static URL
 - Or update `.env` each time and restart Next.js
 
 ### Issue: Database connection refused
+
 **Solution:**
+
 ```bash
 # Check if PostgreSQL is running
 docker ps | grep postgres
@@ -739,7 +697,9 @@ docker logs amd_postgres
 ```
 
 ### Issue: "Unauthorized" when making calls
-**Solution:** 
+
+**Solution:**
+
 1. Create an account at http://localhost:3000/signup
 2. Login at http://localhost:3000/login
 3. Session stored in cookies
@@ -750,20 +710,20 @@ docker logs amd_postgres
 
 Based on 10+ test calls:
 
-| Strategy | Avg Detection Time | Accuracy | API Cost | Infrastructure |
-|----------|-------------------|----------|----------|----------------|
-| **Twilio Native** | 2-5s | 70-80% | Included | None |
-| **HuggingFace** | 5-7s total<br>(200-500ms inference) | 88-92% | $0 | Python service |
-| **Gemini Flash** | 7-10s total<br>(2-4s inference) | 92-95% | ~$0.0001/call | Google API |
+| Strategy          | Avg Detection Time                  | Accuracy | API Cost      | Infrastructure |
+| ----------------- | ----------------------------------- | -------- | ------------- | -------------- |
+| **Twilio Native** | 2-5s                                | 70-80%   | Included      | None           |
+| **HuggingFace**   | 5-7s total<br>(200-500ms inference) | 88-92%   | $0            | Python service |
+| **Gemini Flash**  | 7-10s total<br>(2-4s inference)     | 92-95%   | ~$0.0001/call | Google API     |
 
 **Recommendations:**
+
 - **High volume, cost-sensitive:** HuggingFace wav2vec
 - **Highest accuracy:** Google Gemini
 - **Quick MVP:** Twilio Native
 - **Custom training data:** HuggingFace (fine-tune on your recordings)
 
 ---
-
 
 ## 🤝 Contributing
 
@@ -790,7 +750,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-
 ## 📞 Support
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/AakarshanSingh/advanced-answering-machine-detection/issues)
@@ -802,6 +761,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## ⭐ Show Your Support
 
 If this project helped you, please consider:
+
 - ⭐ **Star this repository**
 - 🐛 **Report bugs** you find
 - 💡 **Suggest features** you'd like
@@ -810,5 +770,3 @@ If this project helped you, please consider:
 ---
 
 **Built with ❤️ by [Aakarshan Singh](https://github.com/AakarshanSingh)**
-
-**Watch the demo:** [YouTube Video](#) *(Coming Soon)*
