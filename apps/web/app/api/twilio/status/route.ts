@@ -24,14 +24,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const errorCode = formData.get("ErrorCode") as string | null;
     const errorMessage = formData.get("ErrorMessage") as string | null;
 
-    console.log("=== TWILIO STATUS WEBHOOK ===");
-    console.log("CallSid:", callSid);
-    console.log("Status:", twilioStatus);
-    console.log("Duration:", callDuration);
-    console.log("Error:", errorCode, errorMessage);
-    console.log("Full webhook data:", Object.fromEntries(formData.entries()));
-    console.log("============================");
-
     if (!callSid) {
       return NextResponse.json({ error: "Missing CallSid" }, { status: 400 });
     }
@@ -96,8 +88,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         rawData: formDataObj,
       },
     });
-
-    console.log(`Call ${callSid} status updated: ${twilioStatus}`);
 
     return NextResponse.json({ received: true });
   } catch (error) {

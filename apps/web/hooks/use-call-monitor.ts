@@ -27,7 +27,6 @@ export function useCallMonitor(
 
       eventSource.onopen = () => {
         setIsConnected(true);
-        console.log("SSE connection established");
       };
 
       eventSource.addEventListener("call-status", (event) => {
@@ -50,7 +49,6 @@ export function useCallMonitor(
             data.status
           )
         ) {
-          console.log("Call ended, closing SSE connection");
           isCleaningUp = true;
           if (eventSource) {
             eventSource.close();
@@ -132,7 +130,6 @@ export function useCallMonitor(
     connectSSE();
 
     return () => {
-      console.log("CallMonitor cleanup: closing EventSource");
       isCleaningUp = true;
       if (eventSource) {
         eventSource.close();

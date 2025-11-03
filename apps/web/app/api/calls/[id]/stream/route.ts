@@ -147,9 +147,6 @@ export async function GET(
             updatedCall.callStatus
           )
         ) {
-          console.log(
-            `Call ${id} ended with status ${updatedCall.callStatus}, stopping poll and closing stream`
-          );
           clearInterval(pollInterval);
           stream.close();
           const streams = activeStreams.get(id);

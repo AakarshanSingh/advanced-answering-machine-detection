@@ -7,12 +7,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const dialCallStatus = formData.get("DialCallStatus") as string;
   const dialCallDuration = formData.get("DialCallDuration") as string | null;
 
-  console.log("=== DIAL STATUS CALLBACK ===");
-  console.log("CallSid:", callSid);
-  console.log("DialCallStatus:", dialCallStatus);
-  console.log("DialCallDuration:", dialCallDuration);
-  console.log("===========================");
-
   const callLog = await prisma.callLog.findUnique({
     where: { callSid },
   });

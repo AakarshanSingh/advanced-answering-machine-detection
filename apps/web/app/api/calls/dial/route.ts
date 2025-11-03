@@ -89,8 +89,6 @@ export async function POST(
       },
     });
 
-    console.log(`Call initiated: ${call.sid} using ${validated.amdStrategy}`);
-
     return NextResponse.json({
       success: true,
       callId: callLog.id,

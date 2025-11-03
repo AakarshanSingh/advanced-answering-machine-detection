@@ -59,8 +59,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       },
     });
 
-    console.log(`AMD result for ${callSid}: ${amdResult} (${answeredBy})`);
-
     try {
       const twilioClient = twilio(
         process.env.TWILIO_ACCOUNT_SID!,
@@ -69,16 +67,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       const redirectUrl = `${process.env.NGROK_URL}/api/twilio/twiml`;
 
-      console.log(
-        `🔄 Redirecting call ${callSid} to ${redirectUrl} with AMD result: ${amdResult}`
-      );
-
       await twilioClient.calls(callSid).update({
         url: redirectUrl,
         method: "POST",
       });
-
-      console.log(`✅ Call ${callSid} redirected successfully`);
     } catch (redirectError) {
       console.error(`Failed to redirect call ${callSid}:`, redirectError);
     }

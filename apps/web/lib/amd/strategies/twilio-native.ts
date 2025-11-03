@@ -11,7 +11,6 @@ export class TwilioNativeAMDStrategy implements IAMDStrategy {
   readonly description = "Twilio built-in AMD with async callbacks";
 
   async initialize(): Promise<void> {
-    console.log("Twilio Native AMD strategy initialized");
   }
 
   async processAudio(
