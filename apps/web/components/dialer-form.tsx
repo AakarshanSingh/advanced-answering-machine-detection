@@ -86,7 +86,7 @@ export function DialerForm({ onCallInitiated }: DialerFormProps) {
               key={num.value}
               type="button"
               onClick={() => setPhoneNumber(num.value)}
-              className="block text-xs text-neutral-400 hover:text-white hover:underline"
+              className="block text-xs text-neutral-400 hover:text-white hover:underline hover:cursor-pointer"
             >
               {num.label}: {num.value}
             </button>
@@ -146,7 +146,7 @@ export function DialerForm({ onCallInitiated }: DialerFormProps) {
       <button
         type="submit"
         disabled={isSubmitting || !phoneNumber}
-        className="w-full px-4 py-3 bg-white text-black font-medium rounded-md hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-4 py-3 bg-white text-black font-medium rounded-md hover:cursor-pointer hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center">

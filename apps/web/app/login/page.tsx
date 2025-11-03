@@ -106,7 +106,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-black hover:bg-neutral-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative hover:cursor-pointer flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-black hover:bg-neutral-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </button>

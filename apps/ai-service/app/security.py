@@ -75,7 +75,7 @@ class AudioPredictionRequest(BaseModel):
     """Validation model for audio prediction requests"""
     
     # Optional fields for metadata
-    call_sid: Optional[str] = Field(None, regex=r"^CA[a-f0-9]{32}$")
+    call_sid: Optional[str] = Field(None, pattern=r"^CA[a-f0-9]{32}$")
     source: Optional[str] = Field(None, max_length=50)
     
     class Config:
@@ -91,7 +91,7 @@ class GeminiPredictionRequest(BaseModel):
     """Validation model for Gemini prediction requests"""
     
     # Optional metadata
-    call_sid: Optional[str] = Field(None, regex=r"^CA[a-f0-9]{32}$")
+    call_sid: Optional[str] = Field(None, pattern=r"^CA[a-f0-9]{32}$")
     prompt_type: Optional[Literal["default", "detailed"]] = "default"
     
     class Config:

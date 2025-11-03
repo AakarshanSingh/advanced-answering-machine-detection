@@ -64,7 +64,7 @@ export function Navbar() {
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="rounded-md bg-neutral-800 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 focus:ring-offset-black transition-colors"
+                  className="rounded-md hover:cursor-pointer bg-neutral-800 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 focus:ring-offset-black transition-colors"
                 >
                   Logout
                 </button>

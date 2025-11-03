@@ -83,7 +83,7 @@ export function SetupChecklist() {
     >
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between text-left"
+        className="w-full hover:cursor-pointer px-4 py-3 flex items-center justify-between text-left"
       >
         <div className="flex items-center space-x-3">
           {hasErrors ? (
@@ -134,7 +134,7 @@ export function SetupChecklist() {
         <div className="px-4 pb-4 space-y-3">
           {checks.map((check) => (
             <div key={check.id} className="flex items-start space-x-3">
-              <div className="flex-shrink-0 mt-0.5">
+              <div className="shrink-0 mt-0.5">
                 {check.status === "checking" && (
                   <svg
                     className="animate-spin h-4 w-4 text-neutral-400"

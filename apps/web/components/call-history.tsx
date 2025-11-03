@@ -33,7 +33,7 @@ export function CallHistory() {
           <p className="text-sm text-red-400">{error}</p>
           <button
             onClick={fetchCallHistory}
-            className="mt-2 text-sm text-red-400 hover:text-red-300 underline"
+            className="mt-2 text-sm text-red-400 hover:text-red-300 underline hover:cursor-pointer"
           >
             Try again
           </button>
@@ -49,7 +49,7 @@ export function CallHistory() {
           <h2 className="text-lg font-semibold text-white">Call History</h2>
           <button
             onClick={fetchCallHistory}
-            className="text-sm text-neutral-400 hover:text-white"
+            className="text-sm text-neutral-400 hover:text-white hover:cursor-pointer"
           >
             Refresh
           </button>
