@@ -126,10 +126,6 @@ export function DialerForm({ onCallInitiated }: DialerFormProps) {
           <p className="text-xs text-neutral-400 mt-1">
             {selectedStrategy.description}
           </p>
-          <p className="text-xs text-neutral-400 mt-1">
-            <span className="font-medium">Est. Latency:</span>{" "}
-            {selectedStrategy.estimatedLatency}
-          </p>
         </div>
       </div>
 

@@ -13,7 +13,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-application = FastAPI(
+app = FastAPI(
     title="AMD AI Service",
     description="Advanced Answering Machine Detection using AI models",
     version="1.0.0",
@@ -21,7 +21,7 @@ application = FastAPI(
     redoc_url="/redoc"
 )
 
-application.add_middleware(
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
@@ -29,7 +29,7 @@ application.add_middleware(
     allow_headers=["*"],
 )
 
-@application.middleware("http")
+@app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
@@ -42,7 +42,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-@application.get("/health")
+@app.get("/health")
 async def health_check():
     return {
         "status": "healthy",
@@ -52,7 +52,7 @@ async def health_check():
     }
 
 
-@application.get("/")
+@app.get("/")
 async def root():
     return {
         "message": "AMD AI Service",
@@ -64,11 +64,11 @@ async def root():
 from app.routes.health import router as health_router
 from app.routes.gemini_amd import router as gemini_router
 
-application.include_router(health_router, prefix="/api/v1", tags=["health"])
-application.include_router(gemini_router, prefix="/api/v1/amd", tags=["amd"])
+app.include_router(health_router, prefix="/api/v1", tags=["health"])
+app.include_router(gemini_router, prefix="/api/v1/amd", tags=["amd"])
 
 
-@application.exception_handler(Exception)
+@app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global exception: {exc}", exc_info=True)
     return JSONResponse(
@@ -83,7 +83,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "app:application",
+        "main:app",
         host="0.0.0.0",
         port=8000,
         reload=True,

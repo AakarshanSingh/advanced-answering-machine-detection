@@ -70,7 +70,7 @@ export function SetupChecklist() {
   const hasErrors = checks.some((c) => c.status === "error");
 
   if (allSuccess && !isExpanded) {
-    return null; 
+    return null;
   }
 
   return (

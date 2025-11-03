@@ -61,7 +61,6 @@ export interface StrategyOption {
   value: AmdStrategy;
   label: string;
   description: string;
-  estimatedLatency: string;
   enabled: boolean;
 }
 

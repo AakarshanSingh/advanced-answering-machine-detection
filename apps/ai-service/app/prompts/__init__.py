@@ -1,0 +1,1 @@
+from app.prompts.amd_prompts import GEMINI_AMD_CLASSIFICATION_PROMPT

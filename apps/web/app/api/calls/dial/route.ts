@@ -5,10 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { strategyFactory } from "@/lib/amd/strategy";
 import { TwilioNativeAMDStrategy } from "@/lib/amd/strategies/twilio-native";
+import { GeminiFlashAMDStrategy } from "@/lib/amd/strategies/gemini-flash";
 import type { DialCallRequest, DialCallResponse } from "@/types/call.types";
 import type { AmdStrategy } from "@prisma/client";
 
 strategyFactory.register(new TwilioNativeAMDStrategy());
+strategyFactory.register(new GeminiFlashAMDStrategy());
 
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID!,
