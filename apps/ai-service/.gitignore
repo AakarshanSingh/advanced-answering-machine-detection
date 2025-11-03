@@ -55,3 +55,12 @@ htmlcov/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# HuggingFace Models & Cache (can be 500MB-2GB+)
+models_cache/
+*.onnx
+*.bin
+*.safetensors
+.cache/
+huggingface/
+transformers_cache/

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Header, HTTPException
+from fastapi import APIRouter, UploadFile, File, Header, HTTPException, Request
 from pydantic import BaseModel
 import google.generativeai as genai
 from typing import Optional, Literal
@@ -9,6 +9,13 @@ import logging
 from app.config import GeminiConfig, AudioConfig, SAFETY_SETTINGS
 from app.prompts.amd_prompts import GEMINI_AMD_CLASSIFICATION_PROMPT
 from app.utils.response_parser import parse_gemini_response, validate_audio_buffer
+from app.security import (
+    check_rate_limit,
+    predict_rate_limiter,
+    get_client_ip,
+    validate_audio_file,
+    validate_call_sid
+)
 
 logger = logging.getLogger(__name__)
 
@@ -117,13 +124,33 @@ detector = GeminiAMDDetector()
 
 @router.post("/gemini", response_model=AMDResponse)
 async def detect_amd_gemini(
+    request: Request,
     audio: UploadFile = File(...),
     call_sid: str = Header(None, alias="X-Call-SID")
 ):
+    """
+    Detect AMD using Google Gemini AI.
+    
+    **Security:**
+    - Rate limited: 20 requests/minute per IP
+    - Input validation: File type, size, Call SID format
+    - Audio validation: Minimum size requirements
+    """
+    # 1. Rate limiting
+    client_ip = get_client_ip(request)
+    check_rate_limit(client_ip, predict_rate_limiter)
+    
+    # 2. Validate Call SID format
+    if call_sid and not validate_call_sid(call_sid):
+        raise HTTPException(status_code=400, detail="Invalid Call SID format")
+    
     if not call_sid:
         call_sid = "unknown"
+    
+    # 3. Validate audio file
+    validate_audio_file(audio, max_size_mb=10)
 
-    logger.info(f"Processing Gemini AMD for call: {call_sid}")
+    logger.info(f"Processing Gemini AMD for call: {call_sid} from IP: {client_ip}")
 
     try:
         audio_data = await audio.read()

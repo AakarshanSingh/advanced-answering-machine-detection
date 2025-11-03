@@ -60,7 +60,6 @@ export interface CallMonitorProps {
 export interface StrategyOption {
   value: AmdStrategy;
   label: string;
-  description: string;
   enabled: boolean;
 }
 

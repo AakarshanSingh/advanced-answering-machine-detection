@@ -63,9 +63,11 @@ async def root():
 
 from app.routes.health import router as health_router
 from app.routes.gemini_amd import router as gemini_router
+from app.routes.huggingface_amd import router as hf_router
 
 app.include_router(health_router, prefix="/api/v1", tags=["health"])
-app.include_router(gemini_router, prefix="/api/v1/amd", tags=["amd"])
+app.include_router(gemini_router, prefix="/api/v1/amd", tags=["amd", "gemini"])
+app.include_router(hf_router, prefix="/api/v1/amd/hf", tags=["amd", "huggingface"])
 
 
 @app.exception_handler(Exception)

@@ -118,15 +118,6 @@ export function DialerForm({ onCallInitiated }: DialerFormProps) {
             </option>
           ))}
         </select>
-
-        <div className="mt-2 p-3 bg-neutral-900 border border-neutral-800 rounded-md">
-          <p className="text-sm font-medium text-white">
-            {selectedStrategy.label}
-          </p>
-          <p className="text-xs text-neutral-400 mt-1">
-            {selectedStrategy.description}
-          </p>
-        </div>
       </div>
 
       <div>

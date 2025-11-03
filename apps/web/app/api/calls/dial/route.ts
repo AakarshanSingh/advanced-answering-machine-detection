@@ -1,39 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import twilio from "twilio";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { strategyFactory } from "@/lib/amd/strategy";
 import { TwilioNativeAMDStrategy } from "@/lib/amd/strategies/twilio-native";
 import { GeminiFlashAMDStrategy } from "@/lib/amd/strategies/gemini-flash";
+import { HuggingFaceAMDStrategy } from "@/lib/amd/strategies/huggingface";
 import type { DialCallRequest, DialCallResponse } from "@/types/call.types";
 import type { AmdStrategy } from "@prisma/client";
 
+// Security imports
+import { dialRequestSchema, validateRequest, formatValidationError } from "@/lib/validation";
+import { dialRateLimit, checkRateLimit, getClientIdentifier, getRateLimitHeaders } from "@/lib/rate-limit";
+
 strategyFactory.register(new TwilioNativeAMDStrategy());
 strategyFactory.register(new GeminiFlashAMDStrategy());
+strategyFactory.register(new HuggingFaceAMDStrategy());
 
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID!,
   process.env.TWILIO_AUTH_TOKEN!
 );
 
-const dialSchema = z.object({
-  phoneNumber: z
-    .string()
-    .regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format"),
-  amdStrategy: z.enum([
-    "TWILIO_NATIVE",
-    "JAMBONZ",
-    "HUGGINGFACE",
-    "GEMINI_FLASH",
-  ]),
-  notes: z.string().optional(),
-});
-
 export async function POST(
   req: NextRequest
 ): Promise<NextResponse<DialCallResponse>> {
   try {
+    // 1. Rate limiting check
+    const identifier = getClientIdentifier(req);
+    const rateLimitResult = await checkRateLimit(dialRateLimit, identifier);
+
+    if (rateLimitResult && !rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: `Rate limit exceeded. Try again in ${Math.ceil((rateLimitResult.reset - Date.now()) / 1000)} seconds`, 
+          callId: "" 
+        },
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
+
+    // 2. Authentication check
     const session = await auth.api.getSession({
       headers: req.headers,
     });
@@ -47,8 +58,31 @@ export async function POST(
 
     const userId = session.user.id;
 
-    const body: DialCallRequest = await req.json();
-    const validated = dialSchema.parse(body);
+    // 3. Input validation with Zod
+    const body = await req.json();
+    
+    const validationResult = validateRequest(dialRequestSchema, {
+      phoneNumber: body.phoneNumber,
+      strategy: body.amdStrategy, // Map frontend field to validation schema
+      agentNumber: body.agentNumber,
+    });
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: `Validation error: ${formatValidationError(validationResult.error)}`, 
+          callId: "" 
+        },
+        { status: 400 }
+      );
+    }
+
+    const validated = {
+      phoneNumber: validationResult.data.phoneNumber,
+      amdStrategy: validationResult.data.strategy, // Map back to frontend field
+      notes: body.notes,
+    };
 
     const strategy = strategyFactory.get(validated.amdStrategy as AmdStrategy);
 
@@ -99,19 +133,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Error initiating call:", error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          callId: "",
-          message: `Validation error: ${error.issues
-            .map((e: { message: string }) => e.message)
-            .join(", ")}`,
-        },
-        { status: 400 }
-      );
-    }
 
     if (error instanceof Error && error.message.includes("NGROK_URL")) {
       return NextResponse.json(

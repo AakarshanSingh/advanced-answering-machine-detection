@@ -1,20 +1,70 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyTwilioSignature, parseTwilioWebhook } from "@/lib/twilio-security";
+import { webhookRateLimit, checkRateLimit, getTwilioIdentifier, getRateLimitHeaders } from "@/lib/rate-limit";
+import { twimlRequestSchema, validateRequest, formatValidationError } from "@/lib/validation";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const formData = await req.formData();
-  const answeredBy = formData.get("AnsweredBy") as string | null;
-  const callSid = formData.get("CallSid") as string;
+  try {
+    // 1. Parse webhook body
+    const body = await parseTwilioWebhook(req);
 
-  const callLog = await prisma.callLog.findUnique({
-    where: { callSid },
-  });
+    // 2. Verify Twilio signature
+    if (!verifyTwilioSignature(req, body)) {
+      console.error('[TwiML] Invalid Twilio signature');
+      return new NextResponse('Forbidden', { status: 403 });
+    }
 
-  let twiml = '<?xml version="1.0" encoding="UTF-8"?><Response>';
+    // 3. Rate limiting (by Twilio Account SID)
+    const identifier = getTwilioIdentifier(body);
+    const rateLimitResult = await checkRateLimit(webhookRateLimit, identifier);
+
+    if (rateLimitResult && !rateLimitResult.success) {
+      return new NextResponse('Rate limit exceeded', { 
+        status: 429,
+        headers: getRateLimitHeaders(rateLimitResult)
+      });
+    }
+
+    // 4. Input validation
+    const validationResult = validateRequest(twimlRequestSchema, body);
+
+    if (!validationResult.success) {
+      console.error('[TwiML] Validation error:', formatValidationError(validationResult.error));
+      return new NextResponse('Bad Request', { status: 400 });
+    }
+
+    const { CallSid: callSid } = validationResult.data;
+    const answeredBy = body.AnsweredBy as string | null;
+
+    const callLog = await prisma.callLog.findUnique({
+      where: { callSid },
+    });
+
+    let twiml = '<?xml version="1.0" encoding="UTF-8"?><Response>';
 
   if (callLog?.amdStrategy === "GEMINI_FLASH" && !callLog?.amdResult) {
     twiml += '<Say voice="Polly.Joanna">Please wait while we analyze your call.</Say>';
     twiml += `<Record maxLength="5" recordingStatusCallback="${process.env.NGROK_URL}/api/twilio/gemini-amd" recordingStatusCallbackMethod="POST" recordingStatusCallbackEvent="in-progress"/>`;
+    twiml += '<Pause length="5"/>';
+    twiml += `<Redirect>${process.env.NGROK_URL}/api/twilio/twiml</Redirect>`;
+    twiml += "</Response>";
+    
+    return new NextResponse(twiml, {
+      headers: {
+        "Content-Type": "text/xml",
+      },
+    });
+  }
+
+  if (callLog?.amdStrategy === "HUGGINGFACE" && !callLog?.amdResult) {
+    // For HuggingFace, we need to record audio and send to Python AI service
+    // WebSocket streaming doesn't work in Next.js App Router, so we use recording approach like Gemini
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8000";
+    const callbackUrl = `${process.env.NGROK_URL}/api/twilio/hf-callback`;
+    
+    twiml += '<Say voice="Polly.Joanna">Please wait while we analyze your call.</Say>';
+    twiml += `<Record maxLength="5" recordingStatusCallback="${callbackUrl}?callSid=${callSid}" recordingStatusCallbackMethod="POST" recordingStatusCallbackEvent="completed"/>`;
     twiml += '<Pause length="5"/>';
     twiml += `<Redirect>${process.env.NGROK_URL}/api/twilio/twiml</Redirect>`;
     twiml += "</Response>";
@@ -161,13 +211,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     twiml += `<Redirect>${process.env.NGROK_URL}/api/twilio/twiml</Redirect>`;
   }
 
-  twiml += "</Response>";
+    twiml += "</Response>";
 
-  return new NextResponse(twiml, {
-    headers: {
-      "Content-Type": "text/xml",
-    },
-  });
+    return new NextResponse(twiml, {
+      headers: {
+        "Content-Type": "text/xml",
+      },
+    });
+  } catch (error) {
+    console.error('[TwiML] Error generating TwiML:', error);
+    
+    // Return generic error TwiML
+    const errorTwiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Joanna">An error occurred. Please try again later.</Say><Hangup/></Response>`;
+    
+    return new NextResponse(errorTwiml, {
+      headers: {
+        "Content-Type": "text/xml",
+      },
+    });
+  }
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
