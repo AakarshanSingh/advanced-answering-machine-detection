@@ -7,6 +7,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const dialCallStatus = formData.get("DialCallStatus") as string;
   const dialCallDuration = formData.get("DialCallDuration") as string | null;
 
+  console.log(`[Dial Status] CallSid: ${callSid}, Status: ${dialCallStatus}, Duration: ${dialCallDuration}`);
+
   const callLog = await prisma.callLog.findUnique({
     where: { callSid },
   });
@@ -18,6 +20,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
 
     if (dialCallStatus === "completed") {
+      console.log(`[Dial Status] Call completed successfully`);
       await prisma.callLog.update({
         where: { id: callLog.id },
         data: {
@@ -40,6 +43,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       dialCallStatus === "busy" ||
       dialCallStatus === "failed"
     ) {
+      console.log(`[Dial Status] Call failed with status: ${dialCallStatus}`);
       await prisma.amdEvent.create({
         data: {
           callLogId: callLog.id,
@@ -50,7 +54,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  return NextResponse.json({ received: true });
+  // Return empty TwiML - the action URL in Dial already handles the response
+  return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+    headers: { "Content-Type": "text/xml" },
+  });
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {

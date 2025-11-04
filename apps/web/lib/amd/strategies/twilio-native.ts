@@ -39,7 +39,7 @@ export class TwilioNativeAMDStrategy implements IAMDStrategy {
       statusCallbackEvent: ["initiated", "ringing", "answered", "completed"],
 
       machineDetection: "DetectMessageEnd",
-      machineDetectionTimeout: 3,
+      machineDetectionTimeout: 5,
       machineDetectionSpeechThreshold: 1500,
       machineDetectionSpeechEndThreshold: 1000,
       machineDetectionSilenceTimeout: 2000,

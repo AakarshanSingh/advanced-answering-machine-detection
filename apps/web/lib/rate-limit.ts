@@ -23,7 +23,7 @@ export const dialRateLimit = redis
 export const webhookRateLimit = redis
   ? new Ratelimit({
       redis,
-      limiter: Ratelimit.slidingWindow(100, "1 m"),
+      limiter: Ratelimit.slidingWindow(1000, "1 m"), 
       analytics: true,
       prefix: "ratelimit:webhook",
     })

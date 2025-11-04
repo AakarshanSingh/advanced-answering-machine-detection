@@ -15,7 +15,7 @@ const phoneNumberSchema = z
   .max(16, 'Phone number too long');
 
 // AMD Strategy enum
-const amdStrategySchema = z.enum(['TWILIO_NATIVE', 'HUGGINGFACE', 'GEMINI', 'JAMBONZ']);
+const amdStrategySchema = z.enum(['TWILIO_NATIVE', 'HUGGINGFACE', 'GEMINI_FLASH', 'JAMBONZ']);
 
 // Call SID validation (Twilio format)
 const callSidSchema = z

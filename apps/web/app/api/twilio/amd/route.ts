@@ -32,6 +32,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const confidence = answeredBy === "unknown" ? 0.5 : 0.9;
 
+    console.log(`[AMD Callback] ===== Twilio Native AMD =====`);
+    console.log(`[AMD Callback] CallSid: ${callSid}`);
+    console.log(`[AMD Callback] AnsweredBy: ${answeredBy}`);
+    console.log(`[AMD Callback] Parsed Result: ${amdResult}`);
+    console.log(`[AMD Callback] Confidence: ${confidence}`);
+    console.log(`[AMD Callback] Detection Time: ${detectionTimeMs}ms`);
+    console.log(`[AMD Callback] =====================================`);
+
     await prisma.callLog.update({
       where: { id: callLog.id },
       data: {
@@ -42,6 +50,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           amdResult === "HUMAN" ? "HUMAN_DETECTED" : "MACHINE_DETECTED",
       },
     });
+
+    console.log(`[AMD Callback] Database updated successfully for ${callSid}`);
 
     const formDataObj: Record<string, string> = {};
     formData.forEach((value, key) => {
@@ -59,6 +69,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       },
     });
 
+    // Small delay to ensure database transaction is committed
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
       const twilioClient = twilio(
         process.env.TWILIO_ACCOUNT_SID!,
@@ -67,12 +80,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       const redirectUrl = `${process.env.NGROK_URL}/api/twilio/twiml`;
 
+      console.log(`[AMD Callback] Redirecting call ${callSid} to ${redirectUrl}`);
+
       await twilioClient.calls(callSid).update({
         url: redirectUrl,
         method: "POST",
       });
+
+      console.log(`[AMD Callback] Successfully redirected call ${callSid}`);
     } catch (redirectError) {
-      console.error(`Failed to redirect call ${callSid}:`, redirectError);
+      console.error(`[AMD Callback] Failed to redirect call ${callSid}:`, redirectError);
     }
 
     return NextResponse.json({ received: true });
