@@ -13,9 +13,7 @@ Built with Next.js, Twilio, Python FastAPI, and AI/ML models for real-time audio
 
 ## 📺 Demo Video
 
-> 🎥 **[Watch Full Demo on YouTube](#)** _(Coming Soon)_
->
-> See the system in action: multi-strategy AMD detection, real-time monitoring, and automated call routing.
+🎥 **[Watch Full Demo on YouTube](https://youtu.be/3oXgha9Mlds)** 
 
 ---
 
